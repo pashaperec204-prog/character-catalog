@@ -47,6 +47,13 @@ class CharacterCatalog:
         self._commit(replace(self.data, remote_cards={**self.data.remote_cards, code: card}))
         return card, False
 
+    def get_card(self, code: str) -> Character:
+        """Read a known card locally before requesting its metadata."""
+        cached = self.data.remote_cards.get(code)
+        if cached is not None:
+            return cached
+        return self.show(code)[0]
+
     def list_entries(self) -> list[dict[str, str]]:
         """Return list items without issuing one request per character."""
         entries = []
