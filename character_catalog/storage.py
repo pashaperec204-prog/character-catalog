@@ -4,7 +4,7 @@ import tempfile
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
-from .model import ID_PATTERN, Character
+from .model import ID_PATTERN, Character, CharacterFeature
 
 
 @dataclass
@@ -46,7 +46,15 @@ class JsonCatalogStore:
 
     @staticmethod
     def _load_cards(records, *, custom: bool) -> dict[str, Character]:
-        cards = {code: Character(**record) for code, record in records.items()}
+        cards = {}
+        for code, record in records.items():
+            fields = dict(record)
+            for name in ("skills", "passives", "constellations"):
+                entries = fields.get(name, [])
+                if not isinstance(entries, list):
+                    raise ValueError(f"Поле {name} у сховищі має бути масивом.")
+                fields[name] = tuple(CharacterFeature(**entry) for entry in entries)
+            cards[code] = Character(**fields)
         if any(code != card.id or code.startswith("user:") != custom
                for code, card in cards.items()):
             raise ValueError("Помилковий ID картки.")

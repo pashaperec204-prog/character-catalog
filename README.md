@@ -25,6 +25,10 @@ catalog> exit
 
 Під час `create` введіть код `star-keeper` або власний код, ім’я, опис і посилання на зображення. Дані зберігаються у `~/.character_catalog/catalog.json`. Для іншого файла використайте `py -m character_catalog --data-file ./catalog.json`.
 
+## Бізнес-компонент
+
+`character_catalog/parser.py` перетворює JSON Genshin API на моделі персонажа, талантів і сузір’їв. Для майбутнього графічного інтерфейсу доступні `CharacterCatalog.list_entries()` і `Character.to_view_data()`. Поля, правила валідації та приклад використання описані в [дизайн-документі](docs/design.md#бізнес-компонент-парсинг-даних-для-графічного-інтерфейсу).
+
 ## Тестування
 
 ```powershell

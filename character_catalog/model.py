@@ -1,5 +1,5 @@
 import re
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from urllib.parse import urlsplit
 
 
@@ -15,6 +15,19 @@ def validate_image_url(value: str) -> None:
 
 
 @dataclass(frozen=True)
+class CharacterFeature:
+    name: str
+    description: str = ""
+    unlock: str = ""
+    level: int | None = None
+    kind: str = ""
+
+    def __post_init__(self) -> None:
+        if not self.name.strip():
+            raise ValueError("Назва здібності або сузір’я має бути заповнена.")
+
+
+@dataclass(frozen=True)
 class Character:
     id: str
     name: str
@@ -24,6 +37,12 @@ class Character:
     nation: str = ""
     weapon: str = ""
     rarity: int | None = None
+    title: str = ""
+    affiliation: str = ""
+    birthday: str = ""
+    skills: tuple[CharacterFeature, ...] = ()
+    passives: tuple[CharacterFeature, ...] = ()
+    constellations: tuple[CharacterFeature, ...] = ()
 
     def __post_init__(self) -> None:
         code = self.id.removeprefix("user:")
@@ -32,3 +51,10 @@ class Character:
         if not self.name.strip() or not self.description.strip():
             raise ValueError("Ім’я та опис мають бути заповнені.")
         validate_image_url(self.image_url)
+
+    def to_view_data(self) -> dict:
+        """Return a detached, JSON-ready card for a presentation component."""
+        data = asdict(self)
+        for field in ("skills", "passives", "constellations"):
+            data[field] = list(data[field])
+        return data
