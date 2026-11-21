@@ -1,16 +1,21 @@
 from dataclasses import replace
+from pathlib import Path
 
 from .genshin_api import CatalogError, GenshinApi
 from .model import ID_PATTERN, Character
-from .parser import parse_character, parse_character_ids
+from .parser import ARTWORK, parse_character, parse_character_ids
+from .portraits import PortraitCache
 from .storage import JsonCatalogStore
 
 
 class CharacterCatalog:
-    def __init__(self, api: GenshinApi, store: JsonCatalogStore):
+    def __init__(
+        self, api: GenshinApi, store: JsonCatalogStore, portraits: PortraitCache | None = None,
+    ):
         self.api = api
         self.store = store
         self.data = store.load()
+        self.portraits = portraits if portraits is not None else PortraitCache(store.path.parent / "portraits")
 
     def refresh(self) -> int:
         payload = self.api.list_ids("char")
@@ -51,6 +56,21 @@ class CharacterCatalog:
         for code, card in sorted(self.data.custom_cards.items()):
             entries.append({"id": code, "label": card.name, "origin": "custom"})
         return entries
+
+    def portrait(self, code: str) -> tuple[Path, bool]:
+        """Download a portrait on demand or return a cached local image."""
+        if code.startswith("user:"):
+            card, _ = self.show(code)
+            return self.portraits.get((card.image_url,))
+
+        if not ID_PATTERN.fullmatch(code):
+            raise ValueError("Некоректний код персонажа.")
+        card = self.data.remote_cards.get(code)
+        if card is None and code not in self.data.remote_ids:
+            card, _ = self.show(code)
+        primary = f"{ARTWORK}/{code}/portrait"
+        fallback = card.image_url if card is not None else f"{ARTWORK}/{code}/card"
+        return self.portraits.get((primary, fallback))
 
     def _fetch_character(self, code: str) -> Character:
         raw = self.api.get_details("char", code)

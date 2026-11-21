@@ -12,6 +12,7 @@ class CatalogCLI:
         self.commands.register("refresh", self.refresh, "оновити список віддалених персонажів")
         self.commands.register("list", self.list_characters, "показати всі доступні ID персонажів")
         self.commands.register("show", self.show, "show <id> показати картку та посилання")
+        self.commands.register("portrait", self.portrait, "portrait <id> зберегти портрет у локальний кеш")
         self.commands.register("create", self.create, "створити персонажа через діалог")
         self.commands.register("exit", self.exit, "завершити роботу")
 
@@ -63,6 +64,12 @@ class CatalogCLI:
         self.output(f"Графіка: {card.image_url}")
         if cached:
             self.output("Показано збережену локальну копію картки.")
+
+    def portrait(self, args: list[str]) -> None:
+        self._count(args, 1, "portrait <id>")
+        path, cached = self.catalog.portrait(args[0].lower())
+        status = "Портрет із кешу" if cached else "Портрет завантажено"
+        self.output(f"{status}: {path.resolve()}")
 
     def create(self, args: list[str]) -> None:
         self._count(args, 0, "create")

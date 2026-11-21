@@ -18,6 +18,7 @@ py -m character_catalog
 catalog> refresh
 catalog> list
 catalog> show amber
+catalog> portrait amber
 catalog> create
 catalog> show user:star-keeper
 catalog> exit
@@ -28,6 +29,10 @@ catalog> exit
 ## Бізнес-компонент
 
 `character_catalog/parser.py` перетворює JSON Genshin API на моделі персонажа, талантів і сузір’їв. Для майбутнього графічного інтерфейсу доступні `CharacterCatalog.list_entries()` і `Character.to_view_data()`. Поля, правила валідації та приклад використання описані в [дизайн-документі](docs/design.md#бізнес-компонент-парсинг-даних-для-графічного-інтерфейсу).
+
+## Кеш портретів
+
+`portrait amber` завантажує портрет у папку `portraits/` поруч із JSON-сховищем і показує шлях до файла. Наступні виклики використовують локальну копію, навіть після перезапуску. Деталі описані в [дизайн-документі](docs/design.md#завантаження-та-кеш-портретів).
 
 ## Тестування
 
